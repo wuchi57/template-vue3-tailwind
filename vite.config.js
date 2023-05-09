@@ -4,17 +4,26 @@ import { resolve } from 'path'
 // 自动导入
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
+// 集成SvgIcon
+import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 
 export default defineConfig({
   plugins: [
     vue(),
     AutoImport({
-      // 自动导入 Vue 相关函数，如：ref, reactive, toRef 等
-      imports: ['vue'],
-      dts: resolve(__dirname, 'src/auto-imports.d.ts'),
+      // 自动导入 Vue、vue-router 相关函数
+      imports: ['vue', 'vue-router'],
+      dts: resolve(__dirname, './auto-imports.d.ts'),
     }),
     Components({
-      dts: resolve(__dirname, 'src/components.d.ts'),
+      dts: resolve(__dirname, './components.d.ts'),
+    }),
+      // 集成SvgIcon
+    createSvgIconsPlugin({
+      // 指定需要缓存的图标文件夹
+      iconDirs: [resolve(process.cwd(), "src/assets/svg")],
+      // 指定symbolId格式
+      symbolId: "icon-[dir]-[name]",
     }),
   ],
   resolve: {
@@ -42,6 +51,12 @@ export default defineConfig({
     host: '0.0.0.0',
     open: true,
     cors: true,
-    proxy: {}
+    proxy: {
+      '/api-v2': {
+        target: 'http://localhost:8080/',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api-v2/, ''),
+      }
+    }
   },
 })
